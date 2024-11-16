@@ -146,8 +146,8 @@ Esses requisitos fornecem uma base para garantir que o sistema atenda às necess
 ## Desenho da solução completo (Arquitetura Alvo)
 
 A solução será baseada em uma arquitetura de microsserviços para garantir escalabilidade, resiliência e manutenção modular.  
-Os serviços de backend serão construídos em **.NET 8**, o frontend em **React**, e será adotado um banco de dados relacional distribuído (como PostgreSQL com Citus).  
-A comunicação assíncrona será feita com **Kafka** para maior resiliência e suporte a alta disponibilidade.
+Os serviços de backend serão construídos em **.NET 8**, o frontend em **React**, e será adotado um banco de dados noSql **Amazon DynamoDB**.  
+A comunicação assíncrona será feita com **AWS SQS** para maior resiliência e suporte a alta disponibilidade.
 
 ### 1. **Frontend**  
 
@@ -181,29 +181,29 @@ A comunicação assíncrona será feita com **Kafka** para maior resiliência e 
 
 ### 3. **Infraestrutura e Suporte**
 
-- **Banco de Dados**: PostgreSQL com extensão Citus para suporte a escalabilidade horizontal.  
-- **Mensageria**: Apache Kafka para filas duráveis e comunicação entre microsserviços.  
+- **Banco de Dados**: Amazon DynamoDB um banco de dados NoSql gerenciado escalável.  
+- **Mensageria**: AWS SQS para filas duráveis e comunicação entre microsserviços.  
 - **Logs e Observabilidade**: Serilog integrado com Elasticsearch e Kibana para monitoramento e auditoria.  
 
 ### 4. **Segurança**
 
-- Autenticação via **OAuth 2.0**.  
-- Criptografia de dados sensíveis com AES.  
+- Autenticação via **OAuth 2.0** com tokens JWT.
+- Criptografia de dados sensíveis, caso necessário, com AES.
 - Autorização baseada em roles para restrição de acesso.
 
 ## **Arquitetura de Implantação**
 
-- **Ambiente Cloud**: Azure Container Apps.  
-- **Pipeline CI/CD**: Azure DevOps com stages para build, teste e deployment.  
+- **Ambiente Cloud**: AWS EKS para o backend e Bucket S3 para o front.  
+- **Pipeline CI/CD**: Github actions com stages para build+teste e deployment.  
 - **Infraestrutura**: Orquestrada com Docker Compose para desenvolvimento local e Kubernetes para produção.
 
 ## **Fluxo de Comunicação**
 
 1. O frontend comunica-se com os serviços backend via REST API.  
-2. Lançamentos registrados são validados e enfileirados no Kafka.  
-3. O serviço de consolidação consome mensagens do Kafka, processa os dados e armazena relatórios no banco.  
-4. O serviço de notificações consome eventos do Kafka, enviando alertas de sucesso/falha.  
-5. Consultas e relatórios são acessados diretamente pelo serviço de relatórios, que realiza consultas otimizadas ao banco.
+2. Lançamentos registrados são validados e enfileirados no AWS SQS.  
+3. O serviço de consolidação consome mensagens do AWS SQS, processa os dados e armazena relatórios no banco.  
+4. O serviço de notificações consome eventos do SQS, enviando alertas de sucesso/falha.  
+5. Consultas e relatórios são acessados via frontend diretamente no serviço de relatórios, que realiza consultas otimizadas ao banco.
 
 ## **Justificativa na decisão/escolha de ferramentas/tecnologias e de tipo de arquitetura**
 
@@ -232,7 +232,7 @@ A escolha da arquitetura baseada em microsserviços para esta solução é justi
 
 #### **5. Comunicação Assíncrona**
 
-- A utilização de Kafka como broker de mensagens facilita a construção de sistemas reativos e desacoplados, garantindo processamento eficiente e tolerância a latência.
+- A utilização de um broker de mensagens facilita a construção de sistemas reativos e desacoplados, garantindo processamento eficiente e tolerância a latência.
 
 #### **6. Adequação à Complexidade do Sistema**
 
@@ -258,18 +258,18 @@ A escolha da arquitetura baseada em microsserviços para esta solução é justi
 #### **Frontend: React**
 
 - Biblioteca popular, com grande suporte da comunidade.  
-- Ideal para interfaces ricas e responsivas.  
-- Ecossistema maduro para integração com APIs e bibliotecas modernas (e.g., Material UI).
+- Ideal para interfaces ricas e responsivas.
+- Ecossistema maduro para integração com APIs e bibliotecas modernas.
 
-#### **Kafka**
+#### **AWS SQS**
 
 - Alta resiliência para filas duráveis e processamento assíncrono.  
 - Garantia de entrega de mensagens e facilidade de escalar.
 
-#### **PostgreSQL com Citus**
+#### **Amazon DinamoDb**
 
-- Banco de dados relacional, otimizado para dados estruturados.  
-- Suporte à alta carga de trabalho e escalabilidade horizontal.
+- Banco de dados NoSql.  
+- Suporte à alta carga de trabalho e escalabilidade.
 
 ### Devops
 
@@ -284,14 +284,14 @@ A escolha da arquitetura baseada em microsserviços para esta solução é justi
 ```plaintext
 Frontend (React)
      ↓ REST API
+API Gateway
+     ↓ REST API Forward
 Backend (.NET 8)
  ┌─────────────┬──────────────┬───────────────┬───────────────┐
  │ Controle de │ Consolidação │ Relatórios    │ Notificações  │
  │ Lançamentos │              │ e Consultas   │               │
  └─────────────┴──────────────┴───────────────┴───────────────┘
-          ↓ Kafka            ↓ Kafka
-       PostgreSQL (Citus)
-          ↑ Elasticsearch + Kibana (Logs e Observabilidade)
+        ↓ DynamoDB               ↓ Logs e Observabilidade
 ```
 
 ## Justificativa na decisão/escolha de ferramentas/tecnologias e de tipo de arquitetura
