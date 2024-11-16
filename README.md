@@ -6,7 +6,7 @@ A descrição da arquitetura atual (hipotética) está disponível neste [docume
 
 ## Solução Proposta
 
-Solução proposta, considerando mapeamento de domínios funcionais e capacidades de negócio, o documento de requisitos funcionais e não funcionais, o  desenho da aolução está disponível no documento  [AS IS](/arquitetura/solucao-proposta.md).
+Solução proposta, considerando mapeamento de domínios funcionais e capacidades de negócio, o documento de requisitos funcionais e não funcionais, o  desenho da aolução está disponível no seguinte [documento](/arquitetura/solucao-proposta.md).
 
 ## Anexos
 
@@ -22,10 +22,10 @@ Monitoramento e Observabilidade.
 ### Ferramentas e tecnologias utilizadas
 
 - Linguagens e Frameworks
-    - Backend (a defnir).
-    - Frontend(a definir).
+    - Backend - Dotnet 8 com C Sharp.
+    - Frontend - React com Typescript.
 
-- Infraestrutura
+- Infraestrutura:
     - Backend - Opções em avaliação
         - Amazon EKS
         - Amazon Lambda functions
@@ -33,6 +33,7 @@ Monitoramento e Observabilidade.
     - Banco de dados: Amazon DynamoDb
 
 - Devops:
+   - Git, via Github, para versionamento de código.
    - Github actions para pipelines
    - Github Secrets para credenciais da AWS.
    - Amazon ECR para deploy das imagens dos containers.
