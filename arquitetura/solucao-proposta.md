@@ -25,31 +25,36 @@ São as habilidades ou competências que uma organização precisa para atingir 
 
 No caso da solução em questão, são identificadas as seguintes capacidades de negócio.
 
-##### **1. Gerenciamento de Lançamentos**
+#### **1. Gerenciamento de Lançamentos**
+
 - **Cadastrar lançamentos** com informações detalhadas (data, valor, categoria e descrição).
 - **Validar dados dos lançamentos**, como impedir datas futuras e valores negativos.
 - **Armazenar lançamentos em filas duráveis** para garantir resiliência.
 - **Garantir registro em tempo real**, suportando alta disponibilidade.
 
-##### **2. Consolidação de Dados**
+#### **2. Consolidação de Dados**
+
 - **Gerar relatórios consolidados diários**, incluindo totais de créditos, débitos e saldo final.
 - **Consolidar lançamentos por categoria** para análises detalhadas.
 - **Permitir agendamento da consolidação** para automação.
 - **Assegurar processamento eficiente**, mesmo em períodos de alta carga.
 
-##### **3. Relatórios e Consultas**
+#### **3. Relatórios e Consultas**
+
 - **Permitir consultas de lançamentos** por período, categoria e tipo (débito/crédito).
 - **Gerar relatórios de fluxo de caixa** para qualquer intervalo de tempo, com saldo inicial e final.
 - **Exportar relatórios para PDF e Excel**.
 - **Assegurar tempo de resposta ágil** para consultas.
 
-##### **4. Notificações**
+#### **4. Notificações**
+
 - **Notificar falhas na consolidação diária** para alertar usuários de problemas.
 - **Confirmar a conclusão da consolidação diária** por meio de notificações automáticas.
 
 ## Documento de Requisitos
 
 ### **Visão Geral**
+
 A nova versão do sistema de Controle de Fluxo de Caixa inclui o gerenciamento de lançamentos diários (débitos e créditos) e a geração de um relatório diário consolidado. Cada lançamento possui informações detalhadas sobre data, valor, categoria e descrição para facilitar a organização e análise do fluxo de caixa.
 
 ### **Requisitos Funcionais**
@@ -135,6 +140,7 @@ A nova versão do sistema de Controle de Fluxo de Caixa inclui o gerenciamento d
    - O sistema deve permitir integração com outros sistemas de ERP para importação e exportação de dados financeiros, preferencialmente usando APIs RESTful ou formatos de arquivos padrão como CSV e XML.
 
 ### **Considerações Finais a Respeito dos Requisitos**
+
 Esses requisitos fornecem uma base para garantir que o sistema atenda às necessidades do comerciante, possibilitando um fluxo de caixa eficiente, seguro e confiável. Os requisitos não funcionais, como escalabilidade, segurança e resiliência, garantem a confiabilidade, o desempenho da solução, boa experiência dos usuáriosm, e eficiência operacional.
 
 ## Desenho da solução completo (Arquitetura Alvo)
@@ -162,9 +168,8 @@ A comunicação assíncrona será feita com **AWS SQS** para maior resiliência 
 
 #### **Serviço de Consolidação de Dados**
 
-- Processamento e consolidação dos lançamentos em relatórios diários.  
-- Comunicação assíncrona com o serviço de notificações.
-Envio de notificações (sucesso ou falha) de consolidação para usuários via email ou push notifications.
+- Processamento e consolidação dos lançamentos em relatórios diários.
+- Envio de notificações (sucesso ou falha) de consolidação para usuários via email ou push notifications.
 
 ### 3. **Infraestrutura e Suporte**
 
@@ -278,4 +283,3 @@ Futuras versões poderiam implementar as seguintes melhorias:
 
 - Criar um serviço especializado em consultas e relatórios, provavelmente com base em um serviço de dados e sua visualização.
 - Separar a notificação em um serviço distinto do de consolidação.
-
