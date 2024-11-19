@@ -25,31 +25,36 @@ São as habilidades ou competências que uma organização precisa para atingir 
 
 No caso da solução em questão, são identificadas as seguintes capacidades de negócio.
 
-##### **1. Gerenciamento de Lançamentos**
+#### **1. Gerenciamento de Lançamentos**
+
 - **Cadastrar lançamentos** com informações detalhadas (data, valor, categoria e descrição).
 - **Validar dados dos lançamentos**, como impedir datas futuras e valores negativos.
 - **Armazenar lançamentos em filas duráveis** para garantir resiliência.
 - **Garantir registro em tempo real**, suportando alta disponibilidade.
 
-##### **2. Consolidação de Dados**
+#### **2. Consolidação de Dados**
+
 - **Gerar relatórios consolidados diários**, incluindo totais de créditos, débitos e saldo final.
 - **Consolidar lançamentos por categoria** para análises detalhadas.
 - **Permitir agendamento da consolidação** para automação.
 - **Assegurar processamento eficiente**, mesmo em períodos de alta carga.
 
-##### **3. Relatórios e Consultas**
+#### **3. Relatórios e Consultas**
+
 - **Permitir consultas de lançamentos** por período, categoria e tipo (débito/crédito).
 - **Gerar relatórios de fluxo de caixa** para qualquer intervalo de tempo, com saldo inicial e final.
 - **Exportar relatórios para PDF e Excel**.
 - **Assegurar tempo de resposta ágil** para consultas.
 
-##### **4. Notificações**
+#### **4. Notificações**
+
 - **Notificar falhas na consolidação diária** para alertar usuários de problemas.
 - **Confirmar a conclusão da consolidação diária** por meio de notificações automáticas.
 
 ## Documento de Requisitos
 
 ### **Visão Geral**
+
 A nova versão do sistema de Controle de Fluxo de Caixa inclui o gerenciamento de lançamentos diários (débitos e créditos) e a geração de um relatório diário consolidado. Cada lançamento possui informações detalhadas sobre data, valor, categoria e descrição para facilitar a organização e análise do fluxo de caixa.
 
 ### **Requisitos Funcionais**
@@ -135,28 +140,158 @@ A nova versão do sistema de Controle de Fluxo de Caixa inclui o gerenciamento d
    - O sistema deve permitir integração com outros sistemas de ERP para importação e exportação de dados financeiros, preferencialmente usando APIs RESTful ou formatos de arquivos padrão como CSV e XML.
 
 ### **Considerações Finais a Respeito dos Requisitos**
+
 Esses requisitos fornecem uma base para garantir que o sistema atenda às necessidades do comerciante, possibilitando um fluxo de caixa eficiente, seguro e confiável. Os requisitos não funcionais, como escalabilidade, segurança e resiliência, garantem a confiabilidade, o desempenho da solução, boa experiência dos usuáriosm, e eficiência operacional.
 
 ## Desenho da solução completo (Arquitetura Alvo)
 
-- Linguagens e Frameworks
-    - Backend  (a defnir).
-    - Frontend (a definir).
+A solução será baseada em uma arquitetura de microsserviços para garantir escalabilidade, resiliência e manutenção modular.  
+Os serviços de backend serão construídos em **.NET 8**, o frontend em **React**, e será adotado um banco de dados noSql **Amazon DynamoDB**.  
+A comunicação assíncrona será feita com **AWS SQS** para maior resiliência e suporte a alta disponibilidade.
 
-- Infraestrutura
-    - Backend - Opções em avaliação
-        - Amazon EKS
-        - OU Amazon Lambda functions
-    - Frontend - Bucket S3
-    - Banco de dados: Amazon DynamoDb
+### 1. **Frontend**  
 
-- Devops:
-   - Github actions para pipelines
-   - Github Secrets para credenciais da AWS.
-   - Amazon ECR para deploy das imagens dos containers.
-   - Amazon Systems Manager (Parameter Store) para configuração da aplicação.
-   - Amazon Secrets Manager para armazenar credenciais utilizadas pela aplicação.
+- **Framework**: React  
+- **Linguagem**: TypeScript  
+- **Responsabilidade**:
+  - Cadastro e consulta de lançamentos.  
+  - Visualização de relatórios e notificações.  
+  - Geração de relatórios (PDF/Excel).  
+- **Comunicação**: APIs RESTful.
 
+### 2. **Backend (Microsserviços em .NET 8)**  
+
+#### **Serviço de Controle de Lançamentos**
+
+- Cadastro e validação de lançamentos.  
+- Enfileiramento de mensagens para o serviço de consolidação.  
+
+#### **Serviço de Consolidação de Dados**
+
+- Processamento e consolidação dos lançamentos em relatórios diários.  
+- Comunicação assíncrona com o serviço de notificações.  
+
+#### **Serviço de Notificações**
+
+- Envio de notificações (sucesso ou falha) para usuários via email ou push notifications.  
+
+#### **Serviço de Relatórios e Consultas**
+
+- Geração de relatórios customizáveis e exportação para formatos diversos.
+
+### 3. **Infraestrutura e Suporte**
+
+- **Banco de Dados**: Amazon DynamoDB um banco de dados NoSql gerenciado escalável.  
+- **Mensageria**: AWS SQS para filas duráveis e comunicação entre microsserviços.  
+- **Logs e Observabilidade**: Serilog integrado com Elasticsearch e Kibana para monitoramento e auditoria.  
+
+### 4. **Segurança**
+
+- Autenticação via **OAuth 2.0** com tokens JWT.
+- Criptografia de dados sensíveis, caso necessário, com AES.
+- Autorização baseada em roles para restrição de acesso.
+
+## **Arquitetura de Implantação**
+
+- **Ambiente Cloud**: AWS EKS para o backend e Bucket S3 para o front.  
+- **Pipeline CI/CD**: Github actions com stages para build+teste e deployment.  
+- **Infraestrutura**: Orquestrada com Docker Compose para desenvolvimento local e Kubernetes para produção.
+
+## **Fluxo de Comunicação**
+
+1. O frontend comunica-se com os serviços backend via REST API.  
+2. Lançamentos registrados são validados e enfileirados no AWS SQS.  
+3. O serviço de consolidação consome mensagens do AWS SQS, processa os dados e armazena relatórios no banco.  
+4. O serviço de notificações consome eventos do SQS, enviando alertas de sucesso/falha.  
+5. Consultas e relatórios são acessados via frontend diretamente no serviço de relatórios, que realiza consultas otimizadas ao banco.
+
+## **Justificativa na decisão/escolha de ferramentas/tecnologias e de tipo de arquitetura**
+
+### **Tipo de Arquitetura**
+
+A arquitetura de microsserviços proporciona a flexibilidade, a escalabilidade e a resiliência necessárias para atender aos requisitos da solução proposta, garantindo uma base sólida para expansão futura.
+
+A escolha da arquitetura baseada em microsserviços para esta solução é justificada pelos seguintes motivos:
+
+#### **1. Escalabilidade**
+
+- Cada serviço pode ser escalado independentemente, garantindo que apenas os componentes com maior demanda (e.g., consolidação de dados ou notificações) recebam mais recursos, otimizando custos.
+
+#### **2. Isolamento de Falhas**
+
+- Problemas em um serviço não impactam diretamente os demais. Por exemplo, uma falha no serviço de notificações não afetará o cadastro de lançamentos ou a geração de relatórios.
+
+#### **3. Manutenção e Evolução**
+
+- A modularidade permite que equipes diferentes trabalhem em serviços distintos sem interferências, acelerando o desenvolvimento e facilitando a implementação de novas funcionalidades.
+
+#### **4. Tecnologias Heterogêneas**
+
+- A arquitetura permite que tecnologias diferentes sejam usadas para cada serviço, caso necessário.
+  - Embora neste projeto todos sejam em .NET 8, no futuro, um serviço poderia ser reescrito ou complementado com outra tecnologia.
+
+#### **5. Comunicação Assíncrona**
+
+- A utilização de um broker de mensagens facilita a construção de sistemas reativos e desacoplados, garantindo processamento eficiente e tolerância a latência.
+
+#### **6. Adequação à Complexidade do Sistema**
+
+- A solução envolve múltiplos domínios (lançamentos, consolidação, notificações, relatórios).
+- Microsserviços permitem separar claramente essas responsabilidades, mantendo o código limpo e alinhado com princípios de **Single Responsibility**.
+
+#### **7. Implantação Independente**
+
+- Cada serviço pode ser implantado e atualizado individualmente, reduzindo o tempo de inatividade e o impacto no sistema como um todo.
+
+#### **8. Suporte à Escalabilidade Organizacional**
+
+- Com o crescimento da organização, a arquitetura permite que equipes dedicadas se especializem em determinados serviços, promovendo maior produtividade e qualidade.
+
+### **Implementação**
+
+#### **Backend: .NET 8**
+
+- Excelente performance para microsserviços.  
+- Ampla compatibilidade com Azure e suporte à escalabilidade.  
+- Ecosistema robusto para logging, mensageria e integrações.
+
+#### **Frontend: React**
+
+- Biblioteca popular, com grande suporte da comunidade.  
+- Ideal para interfaces ricas e responsivas.
+- Ecossistema maduro para integração com APIs e bibliotecas modernas.
+
+#### **AWS SQS**
+
+- Alta resiliência para filas duráveis e processamento assíncrono.  
+- Garantia de entrega de mensagens e facilidade de escalar.
+
+#### **Amazon DinamoDb**
+
+- Banco de dados NoSql.  
+- Suporte à alta carga de trabalho e escalabilidade.
+
+### Devops
+
+- Github actions para pipelines.
+- Github Secrets para credenciais da AWS.
+- Amazon ECR para deploy das imagens dos containers.
+- Amazon Systems Manager (Parameter Store) para configuração da aplicação.
+- Amazon Secrets Manager para armazenar credenciais utilizadas pela aplicação.
+
+## **Diagrama da Arquitetura**
+
+```plaintext
+Frontend (React)
+     ↓ REST API
+API Gateway
+     ↓ REST API Forward
+Backend (.NET 8)
+ ┌─────────────┬──────────────┬───────────────┬───────────────┐
+ │ Controle de │ Consolidação │ Relatórios    │ Notificações  │
+ │ Lançamentos │              │ e Consultas   │               │
+ └─────────────┴──────────────┴───────────────┴───────────────┘
+        ↓ DynamoDB               ↓ Logs e Observabilidade
+```
 
 ## Justificativa na decisão/escolha de ferramentas/tecnologias e de tipo de arquitetura
-
