@@ -168,16 +168,8 @@ A comunicação assíncrona será feita com **AWS SQS** para maior resiliência 
 
 #### **Serviço de Consolidação de Dados**
 
-- Processamento e consolidação dos lançamentos em relatórios diários.  
-- Comunicação assíncrona com o serviço de notificações.  
-
-#### **Serviço de Notificações**
-
-- Envio de notificações (sucesso ou falha) para usuários via email ou push notifications.  
-
-#### **Serviço de Relatórios e Consultas**
-
-- Geração de relatórios customizáveis e exportação para formatos diversos.
+- Processamento e consolidação dos lançamentos em relatórios diários.
+- Envio de notificações (sucesso ou falha) de consolidação para usuários via email ou push notifications.
 
 ### 3. **Infraestrutura e Suporte**
 
@@ -202,8 +194,8 @@ A comunicação assíncrona será feita com **AWS SQS** para maior resiliência 
 1. O frontend comunica-se com os serviços backend via REST API.  
 2. Lançamentos registrados são validados e enfileirados no AWS SQS.  
 3. O serviço de consolidação consome mensagens do AWS SQS, processa os dados e armazena relatórios no banco.  
-4. O serviço de notificações consome eventos do SQS, enviando alertas de sucesso/falha.  
-5. Consultas e relatórios são acessados via frontend diretamente no serviço de relatórios, que realiza consultas otimizadas ao banco.
+3.1. O serviço enviando alertas de sucesso/falha ao término do processamento.  
+4. Consultas e relatórios são acessados via frontend diretamente nos serviços de controle de fluxo de caixa e de Consolidação diária, que realizam consultas otimizadas ao banco.
 
 ## **Justificativa na decisão/escolha de ferramentas/tecnologias e de tipo de arquitetura**
 
@@ -279,19 +271,15 @@ A escolha da arquitetura baseada em microsserviços para esta solução é justi
 - Amazon Systems Manager (Parameter Store) para configuração da aplicação.
 - Amazon Secrets Manager para armazenar credenciais utilizadas pela aplicação.
 
-## **Diagrama da Arquitetura**
+## **Diagramas da Arquitetura**
 
-```plaintext
-Frontend (React)
-     ↓ REST API
-API Gateway
-     ↓ REST API Forward
-Backend (.NET 8)
- ┌─────────────┬──────────────┬───────────────┬───────────────┐
- │ Controle de │ Consolidação │ Relatórios    │ Notificações  │
- │ Lançamentos │              │ e Consultas   │               │
- └─────────────┴──────────────┴───────────────┴───────────────┘
-        ↓ DynamoDB               ↓ Logs e Observabilidade
-```
+![System Context - Financeiro](diagramas/ToBe-SystemContext.png)
 
-## Justificativa na decisão/escolha de ferramentas/tecnologias e de tipo de arquitetura
+![alt text](diagramas/ToBe-Container.png)
+
+## *Melhorias*
+
+Futuras versões poderiam implementar as seguintes melhorias:
+
+- Criar um serviço especializado em consultas e relatórios, provavelmente com base em um serviço de dados e sua visualização.
+- Separar a notificação em um serviço distinto do de consolidação.
