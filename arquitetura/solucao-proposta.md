@@ -139,24 +139,143 @@ Esses requisitos fornecem uma base para garantir que o sistema atenda às necess
 
 ## Desenho da solução completo (Arquitetura Alvo)
 
-- Linguagens e Frameworks
-    - Backend  (a defnir).
-    - Frontend (a definir).
+A solução será baseada em uma arquitetura de microsserviços para garantir escalabilidade, resiliência e manutenção modular.  
+Os serviços de backend serão construídos em **.NET 8**, o frontend em **React**, e será adotado um banco de dados noSql **Amazon DynamoDB**.  
+A comunicação assíncrona será feita com **AWS SQS** para maior resiliência e suporte a alta disponibilidade.
 
-- Infraestrutura
-    - Backend - Opções em avaliação
-        - Amazon EKS
-        - OU Amazon Lambda functions
-    - Frontend - Bucket S3
-    - Banco de dados: Amazon DynamoDb
+### 1. **Frontend**  
 
-- Devops:
-   - Github actions para pipelines
-   - Github Secrets para credenciais da AWS.
-   - Amazon ECR para deploy das imagens dos containers.
-   - Amazon Systems Manager (Parameter Store) para configuração da aplicação.
-   - Amazon Secrets Manager para armazenar credenciais utilizadas pela aplicação.
+- **Framework**: React  
+- **Linguagem**: TypeScript  
+- **Responsabilidade**:
+  - Cadastro e consulta de lançamentos.  
+  - Visualização de relatórios e notificações.  
+  - Geração de relatórios (PDF/Excel).  
+- **Comunicação**: APIs RESTful.
 
+### 2. **Backend (Microsserviços em .NET 8)**  
 
-## Justificativa na decisão/escolha de ferramentas/tecnologias e de tipo de arquitetura
+#### **Serviço de Controle de Lançamentos**
+
+- Cadastro e validação de lançamentos.  
+- Enfileiramento de mensagens para o serviço de consolidação.  
+
+#### **Serviço de Consolidação de Dados**
+
+- Processamento e consolidação dos lançamentos em relatórios diários.  
+- Comunicação assíncrona com o serviço de notificações.
+Envio de notificações (sucesso ou falha) de consolidação para usuários via email ou push notifications.
+
+### 3. **Infraestrutura e Suporte**
+
+- **Banco de Dados**: Amazon DynamoDB um banco de dados NoSql gerenciado escalável.  
+- **Mensageria**: AWS SQS para filas duráveis e comunicação entre microsserviços.  
+- **Logs e Observabilidade**: Serilog integrado com Elasticsearch e Kibana para monitoramento e auditoria.  
+
+### 4. **Segurança**
+
+- Autenticação via **OAuth 2.0** com tokens JWT.
+- Criptografia de dados sensíveis, caso necessário, com AES.
+- Autorização baseada em roles para restrição de acesso.
+
+## **Arquitetura de Implantação**
+
+- **Ambiente Cloud**: AWS EKS para o backend e Bucket S3 para o front.  
+- **Pipeline CI/CD**: Github actions com stages para build+teste e deployment.  
+- **Infraestrutura**: Orquestrada com Docker Compose para desenvolvimento local e Kubernetes para produção.
+
+## **Fluxo de Comunicação**
+
+1. O frontend comunica-se com os serviços backend via REST API.  
+2. Lançamentos registrados são validados e enfileirados no AWS SQS.  
+3. O serviço de consolidação consome mensagens do AWS SQS, processa os dados e armazena relatórios no banco.  
+3.1. O serviço enviando alertas de sucesso/falha ao término do processamento.  
+4. Consultas e relatórios são acessados via frontend diretamente nos serviços de controle de fluxo de caixa e de Consolidação diária, que realizam consultas otimizadas ao banco.
+
+## **Justificativa na decisão/escolha de ferramentas/tecnologias e de tipo de arquitetura**
+
+### **Tipo de Arquitetura**
+
+A arquitetura de microsserviços proporciona a flexibilidade, a escalabilidade e a resiliência necessárias para atender aos requisitos da solução proposta, garantindo uma base sólida para expansão futura.
+
+A escolha da arquitetura baseada em microsserviços para esta solução é justificada pelos seguintes motivos:
+
+#### **1. Escalabilidade**
+
+- Cada serviço pode ser escalado independentemente, garantindo que apenas os componentes com maior demanda (e.g., consolidação de dados ou notificações) recebam mais recursos, otimizando custos.
+
+#### **2. Isolamento de Falhas**
+
+- Problemas em um serviço não impactam diretamente os demais. Por exemplo, uma falha no serviço de notificações não afetará o cadastro de lançamentos ou a geração de relatórios.
+
+#### **3. Manutenção e Evolução**
+
+- A modularidade permite que equipes diferentes trabalhem em serviços distintos sem interferências, acelerando o desenvolvimento e facilitando a implementação de novas funcionalidades.
+
+#### **4. Tecnologias Heterogêneas**
+
+- A arquitetura permite que tecnologias diferentes sejam usadas para cada serviço, caso necessário.
+  - Embora neste projeto todos sejam em .NET 8, no futuro, um serviço poderia ser reescrito ou complementado com outra tecnologia.
+
+#### **5. Comunicação Assíncrona**
+
+- A utilização de um broker de mensagens facilita a construção de sistemas reativos e desacoplados, garantindo processamento eficiente e tolerância a latência.
+
+#### **6. Adequação à Complexidade do Sistema**
+
+- A solução envolve múltiplos domínios (lançamentos, consolidação, notificações, relatórios).
+- Microsserviços permitem separar claramente essas responsabilidades, mantendo o código limpo e alinhado com princípios de **Single Responsibility**.
+
+#### **7. Implantação Independente**
+
+- Cada serviço pode ser implantado e atualizado individualmente, reduzindo o tempo de inatividade e o impacto no sistema como um todo.
+
+#### **8. Suporte à Escalabilidade Organizacional**
+
+- Com o crescimento da organização, a arquitetura permite que equipes dedicadas se especializem em determinados serviços, promovendo maior produtividade e qualidade.
+
+### **Implementação**
+
+#### **Backend: .NET 8**
+
+- Excelente performance para microsserviços.  
+- Ampla compatibilidade com Azure e suporte à escalabilidade.  
+- Ecosistema robusto para logging, mensageria e integrações.
+
+#### **Frontend: React**
+
+- Biblioteca popular, com grande suporte da comunidade.  
+- Ideal para interfaces ricas e responsivas.
+- Ecossistema maduro para integração com APIs e bibliotecas modernas.
+
+#### **AWS SQS**
+
+- Alta resiliência para filas duráveis e processamento assíncrono.  
+- Garantia de entrega de mensagens e facilidade de escalar.
+
+#### **Amazon DinamoDb**
+
+- Banco de dados NoSql.  
+- Suporte à alta carga de trabalho e escalabilidade.
+
+### Devops
+
+- Github actions para pipelines.
+- Github Secrets para credenciais da AWS.
+- Amazon ECR para deploy das imagens dos containers.
+- Amazon Systems Manager (Parameter Store) para configuração da aplicação.
+- Amazon Secrets Manager para armazenar credenciais utilizadas pela aplicação.
+
+## **Diagramas da Arquitetura**
+
+![System Context - Financeiro](diagramas/ToBe-SystemContext.png)
+
+![alt text](diagramas/ToBe-Container.png)
+
+## *Melhorias*
+
+Futuras versões poderiam implementar as seguintes melhorias:
+
+- Criar um serviço especializado em consultas e relatórios, provavelmente com base em um serviço de dados e sua visualização.
+- Separar a notificação em um serviço distinto do de consolidação.
 
