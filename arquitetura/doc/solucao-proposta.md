@@ -185,9 +185,9 @@ A comunicação assíncrona será feita com **AWS SQS** para maior resiliência 
 
 ## **Arquitetura de Implantação**
 
-- **Ambiente Cloud**: AWS EKS para o backend e Bucket S3 para o front.  
+- **Ambiente Cloud**: AWS Fargate para os microsserviços backend e Bucket S3 para o front.  
 - **Pipeline CI/CD**: Github actions com stages para build+teste e deployment.  
-- **Infraestrutura**: Orquestrada com Docker Compose para desenvolvimento local e Kubernetes para produção.
+- **Infraestrutura**: Orquestrada com Docker Compose para desenvolvimento local e Kubernetes (usando o Fargate) para produção.
 
 ## **Fluxo de Comunicação**
 
@@ -265,17 +265,22 @@ A escolha da arquitetura baseada em microsserviços para esta solução é justi
 
 ### Devops
 
-- Github actions para pipelines.
-- Github Secrets para credenciais da AWS.
+- Github actions para iniciar as pipelines.
+- Github secrets para credenciais da AWS.
 - Amazon ECR para deploy das imagens dos containers.
 - Amazon Systems Manager (Parameter Store) para configuração da aplicação.
 - Amazon Secrets Manager para armazenar credenciais utilizadas pela aplicação.
 
 ## **Diagramas da Arquitetura**
 
+### System Context
 ![System Context - Financeiro](diagramas/ToBe-SystemContext.png)
 
-![alt text](diagramas/ToBe-Container.png)
+### Container
+![Container - Financeiro](diagramas/ToBe-Container.png)
+
+### Infraestrutura AWS + CI/CD
+![Infraestutura Cloud](diagramas/InfraestruturaCloud.png)
 
 ## *Melhorias*
 
