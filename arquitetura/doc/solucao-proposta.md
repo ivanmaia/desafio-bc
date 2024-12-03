@@ -279,7 +279,14 @@ A escolha da arquitetura baseada em microsserviços para esta solução é justi
 
 ## *Melhorias*
 
-Futuras versões poderiam implementar as seguintes melhorias:
+Futuras versões da solução poderiam implementar as seguintes melhorias / refatorações:
 
 - Criar um serviço especializado em consultas e relatórios, provavelmente com base em um serviço de dados e sua visualização.
 - Separar a notificação em um serviço distinto do de consolidação.
+- Separar as partes da solução em diferentes repositórios.
+
+Melhorias futurasa de arquitetura / infraestrutura
+
+- Implementar backup do banco de dados.
+- Adicionar auto-scaling para os serviços ECS.
+- Adicionar Cache.
